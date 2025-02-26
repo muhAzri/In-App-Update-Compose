@@ -9,6 +9,7 @@ io-gitlab-arturbosch-detekt = "1.23.6"
 kotlin = "2.0.0"
 logcat = "0.1"
 org-jetbrains-kotlinx = "1.8.1"
+threetenabp = "1.4.6"
 toggles-flow = "0.0.1"
 
 [libraries]
@@ -38,6 +39,7 @@ org-jetbrains-kotlinx-kotlinx-coroutines-core = { module = "org.jetbrains.kotlin
 org-jetbrains-kotlinx-kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "org-jetbrains-kotlinx" }
 org-jetbrains-kotlinx-kotlinx-datetime = "org.jetbrains.kotlinx:kotlinx-datetime:0.6.0"
 se-eelde-toggles-toggles-flow = { module = "se.eelde.toggles:toggles-flow", version.ref = "toggles-flow" }
+threetenabp = { module = "com.jakewharton.threetenabp:threetenabp", version.ref = "threetenabp" }
 
 [plugins]
 com-android-application = { id = "com.android.application", version.ref = "agp" }

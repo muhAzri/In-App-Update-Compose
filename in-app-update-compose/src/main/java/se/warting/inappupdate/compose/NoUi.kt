@@ -1,7 +1,6 @@
 package se.warting.inappupdate.compose
 
 import android.app.Activity
-import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext

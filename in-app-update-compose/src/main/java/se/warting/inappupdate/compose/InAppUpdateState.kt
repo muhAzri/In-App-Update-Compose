@@ -9,12 +9,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.datetime.Instant
+import org.threeten.bp.Instant
 
 
 private class InMemoryInAppUpdateSettings : InAppUpdateSettings {
     private val _updateDeclined: MutableStateFlow<Declined> =
-        MutableStateFlow(Declined(0, Instant.DISTANT_PAST))
+        MutableStateFlow(Declined(0, Instant.MIN))
 
 
     override val updateDeclined: StateFlow<Declined> = _updateDeclined.asStateFlow()

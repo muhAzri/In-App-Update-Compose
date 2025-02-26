@@ -28,12 +28,12 @@ import com.google.android.play.core.ktx.requestUpdateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.daysUntil
 import logcat.LogPriority
 import logcat.logcat
+import org.threeten.bp.Instant
+import org.threeten.bp.LocalDate
+import org.threeten.bp.ZoneId
+import org.threeten.bp.temporal.ChronoUnit
 import com.google.android.play.core.install.model.ActivityResult as UpdateActivityResult
 
 
@@ -166,7 +166,7 @@ public sealed class InAppUpdateState {
     public data class DownloadedUpdate(
         val appUpdateResult: AppUpdateResult.Downloaded,
         val isRequiredUpdate: Boolean,
-        val onCompleteUpdate: suspend (AppUpdateResult.Downloaded) -> Unit
+        val onCompleteUpdate: suspend (AppUpdateResult.Downloaded) -> Unit,
     ) : InAppUpdateState()
 
     public data class InProgressUpdate(
@@ -210,7 +210,7 @@ internal class MutableInAppUpdateState(
         appUpdateResult: AppUpdateResult,
         declined: Declined,
         numberSettings: NumberSettings,
-        inAppUpdateState: MutableInAppUpdateState
+        inAppUpdateState: MutableInAppUpdateState,
     ): InAppUpdateState {
         return appUpdateResult.toInAppUpdateState(
             numberSettings = numberSettings,
@@ -258,7 +258,7 @@ internal class MutableInAppUpdateState(
         declined: Declined,
         onStartUpdate: (updateInfo: AppUpdateInfo, updateType: Mode) -> Unit,
         onDeclineUpdate: (AppUpdateInfo) -> Unit,
-        onCompleteUpdate: suspend (AppUpdateResult.Downloaded) -> Unit
+        onCompleteUpdate: suspend (AppUpdateResult.Downloaded) -> Unit,
     ): InAppUpdateState = when (this) {
         AppUpdateResult.NotAvailable -> InAppUpdateState.NotAvailable
         is AppUpdateResult.Available -> if (shouldUpdateImmediately(updateInfo, numberSettings)) {
@@ -343,7 +343,7 @@ internal class MutableInAppUpdateState(
     internal fun declineUpdate(updateInfo: AppUpdateInfo) {
         // Don't store declined state for high-priority updates.
         // if (updateInfo.updatePriority() >= numberSettings.highPrioritizeUpdates) return
-        settings.decline(Declined(updateInfo.availableVersionCode(), Clock.System.now()))
+        settings.decline(Declined(updateInfo.availableVersionCode(), Instant.now()))
     }
 }
 
@@ -382,7 +382,7 @@ public data class MyInstallState(
 
 internal fun shouldUpdateImmediately(
     updateInfo: AppUpdateInfo,
-    numberSettings: NumberSettings
+    numberSettings: NumberSettings,
 ): Boolean = with(updateInfo) {
     updateInfo.updateAvailability() ==
             UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS ||
@@ -420,10 +420,10 @@ internal fun shouldPromptToUpdate(
                 ?: numberSettings.promptIntervalLowPrioritizeUpdateInDays) < promptIntervalDays
         ) return false
 
-        val daysSinceLastDecline = declined.date.daysUntil(
-            Clock.System.now(),
-            TimeZone.currentSystemDefault()
-        )
+        val daysSinceLastDecline = ChronoUnit.DAYS.between(
+            declined.date.atZone(ZoneId.systemDefault()).toLocalDate(),
+            LocalDate.now(ZoneId.systemDefault())
+        ).toInt()
 
         if (daysSinceLastDecline < promptIntervalDays) {
             return false
@@ -457,10 +457,10 @@ internal fun shouldPromptToRequiredUpdate(
                 ?: numberSettings.promptIntervalLowPrioritizeUpdateInDays) < promptIntervalDays
         ) return false
 
-        val daysSinceLastDecline = declined.date.daysUntil(
-            Clock.System.now(),
-            TimeZone.currentSystemDefault()
-        )
+        val daysSinceLastDecline = ChronoUnit.DAYS.between(
+            declined.date.atZone(ZoneId.systemDefault()).toLocalDate(),
+            LocalDate.now(ZoneId.systemDefault())
+        ).toInt()
 
         if (daysSinceLastDecline < promptIntervalDays) {
             return false
